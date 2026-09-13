@@ -55,7 +55,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # 'django.template.context_processors.request',
+                'django.template.context_processors.request',
+                'shop.context_processors.cart_items_count',
             ],
         },
     },
@@ -145,4 +146,3 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = "sayem565554@gmail.com"
 EMAIL_HOST_PASSWORD = "uivizhptsrtoobxn"
 EMAIL_USE_TLS = True
-EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool, default=False)

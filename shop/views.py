@@ -5,6 +5,7 @@ from .forms import RegistrationForm,RatingForm
 from . import models
 from . import forms
 from django.db.models import Q,Max,Min,Avg
+from . import sslcommerz
 # Create your views here.
 
 # Manual User Authentication
@@ -217,6 +218,19 @@ def checkout(request):
     })
 
 #payment related
+
+def payment_process(request):
+    order_id = request.session.get('order_id')
+    if not order_id:
+        return redirect('')
+    order = get_object_or_404(models.Order, id = order_id)
+    payment_data = sslcommerz.generate_sslcommerz_payment(request, order)
+
+    if payment_data == 'SUCCESS':
+        return redirect('')
+    else:
+        messages.error(request,'Payment Gatway Error')
+
 def payment_success(request,order_id):
     order = get_object_or_404(models.Order,id = order_id,user = request.user)
     order.paid = True
