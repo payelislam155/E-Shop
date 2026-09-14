@@ -116,7 +116,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'
 
 #LOGIN URL
-LOGIN_URL = ''
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -141,7 +141,7 @@ MAILERS = {
 # SSL Commerz setup
 SSLCOMMERZ_STORE_ID = 'eagle6aa64fbadba04'
 SSLCOMMERZ_STORE_PASSWORD = 'eagle6aa64fbadba04@ssl'
-SSLCOMMERZ_PAYMENT_URL = 'https://sandbox.sslcommerz.com/gwprocess/v4/process.php'
+SSLCOMMERZ_PAYMENT_URL = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php'
 SSLCOMMERZ_VALIDATION_URL = 'https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php'
 
 

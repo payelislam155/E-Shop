@@ -14,7 +14,7 @@ urlpatterns = [
     path('', views.home, name = 'home'),
     path('products/', views.product_list, name = 'product_list'),
     path('products/<slug:category_slug>/', views.product_list, name = 'product_list_by_category'),
-    path('products/<slug:slug>/', views.product_detail, name = 'product_detail'),
+    path('products/detail/<slug:slug>/', views.product_detail, name = 'product_detail'),
     path('rate/<slug:product_id>/', views.rate_product, name = 'rate_product'),
 
     # cart related urls

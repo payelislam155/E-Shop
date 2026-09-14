@@ -57,7 +57,9 @@ class Cart(models.Model):
            return f'cart for{self.user.username}'
      def get_total_price(self):
            return sum(item.get_cost() for item in self.items.all())
-     def get_total_items(self):
+
+     @property
+     def cart_items_count(self):
          return sum(item.quantity for item in self.items.all())
 
 class CartItem(models.Model):
@@ -96,7 +98,7 @@ class Order(models.Model):
            return f'Order #{self.id}'
 
      def get_total_cost(self):
-           return sum(item.get_cost() for item in self.items.all())
+           return sum(item.get_cost() for item in self.order_items.all())
 
 class OrderItem(models.Model):
      order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_items')

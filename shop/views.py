@@ -6,6 +6,7 @@ from . import models
 from . import forms
 from django.db.models import Q,Max,Min,Avg
 from . import sslcommerz
+from django.contrib.auth.decorators import login_required
 
 # Manual User Authentication
 def login_view(request):
@@ -25,7 +26,7 @@ def login_view(request):
 
 def register_view(request):
     if request.method == 'POST':
-        form = RegistrationForm()
+        form = RegistrationForm(request.POST)
         if form.is_valid():
            user = form.save()
            login(request, user)
@@ -51,7 +52,7 @@ def product_list(request,category_slug = None):
     products = models.Product.objects.all()
 
     if category_slug:
-        category = get_object_or_404(models.Category,category_slug)
+        category = get_object_or_404(models.Category,slug=category_slug)
         products = products.filter(category = category)
 
     min_price = products.aggregate(Min('price'))['price__min']
@@ -71,7 +72,7 @@ def product_list(request,category_slug = None):
         products = products.filter(
             Q(name__icontains = query) |
             Q(description__icontains = query) |
-            Q(category_name__icontains = query)
+            Q(category__name__icontains = query)
         )
     return render(request,'shop/product_list.html',{
         'category':category,
@@ -101,6 +102,7 @@ def product_detail(request,slug):
         'rating_form':rating_form
     })
 
+@login_required
 def rate_product(request,product_id):
     product = get_object_or_404(models.Product,id=product.id)
 
@@ -133,6 +135,7 @@ def rate_product(request,product_id):
     })
 
 # cart related views
+@login_required
 def cart_detail(request):
     try:
         cart = models.Cart.objects.get(user = request.user)
@@ -140,6 +143,7 @@ def cart_detail(request):
         cart = models.Cart.objects.create(user = request.user)
     return render(request,'shop/cart.html',{'cart':cart})
 
+@login_required
 def cart_add(request,product_id):
     product = get_object_or_404(models.Product,id=product_id)
 
@@ -156,11 +160,12 @@ def cart_add(request,product_id):
         models.CartItem.objects.create(cart=cart,product=product,quantity = 1)
 
     messages.success(request,f"{product.name} has been added to your cart!")
-    return redirect(request,'product_detail',slug=product.slug)
+    return redirect('product_detail',slug=product.slug)
 
+@login_required
 def cart_update(request,product_id):
     cart = get_object_or_404(models.Cart,user = request.user)
-    product = get_object_or_404(models.Product,product_id)
+    product = get_object_or_404(models.Product,id=product_id)
     cart_item = get_object_or_404(models.CartItem,cart=cart,product=product)
 
     quantity = int(request.POST.get('quantity',1))
@@ -174,6 +179,7 @@ def cart_update(request,product_id):
         messages.success(request,f'Cart updated successfully!!')
     return redirect('cart_detail')
 
+@login_required
 def cart_remove(request,product_id):
     cart = get_object_or_404(models.Cart,user = request.user)
     product = get_object_or_404(models.Product,id = product_id)
@@ -184,12 +190,13 @@ def cart_remove(request,product_id):
     return redirect('cart_detail')
 
 # Product->Cart Item -> Order Item
+@login_required
 def checkout(request):
     try:
         cart = models.Cart.objects.get(user = request.user)
-        if not cart.items.existes():
+        if not cart.items.exists():
             messages.warning(request,'your cart is empty')
-            return redirect('')
+            return redirect('cart_detail')
     except models.Cart.DoesNotExist:
             messages.warning(request,'your cart is empty')
             return redirect('cart_detail')
@@ -200,7 +207,7 @@ def checkout(request):
            order.user = request.user
            order.save()
 
-           for item in cart.items.object.all():
+           for item in cart.items.all():
                models.OrderItem.objects.create(
                    order = order,
                    product = item.product,
@@ -218,6 +225,7 @@ def checkout(request):
     })
 
 # payment related views
+@login_required
 def payment_process(request):
     order_id = request.session.get('order_id')
     if not order_id:
@@ -225,12 +233,13 @@ def payment_process(request):
     order = get_object_or_404(models.Order, id = order_id)
     payment_data = sslcommerz.generate_sslcommerz_payment(request, order)
 
-    if payment_data == 'SUCCESS':
+    if payment_data.get('status') == 'SUCCESS':
         return redirect(payment_data['GatewayPageURL'])
     else:
         messages.error(request,'Payment Gatway Error')
         return redirect('checkout')
 
+@login_required
 def payment_success(request,order_id):
     order = get_object_or_404(models.Order,id = order_id,user = request.user)
     order.paid = True
@@ -249,12 +258,14 @@ def payment_success(request,order_id):
     messages.success(request,'payment successful!')
     return render(request,'shop/payment_success.html',{'order':order})
 
+@login_required
 def payment_fail(request, order_id):
     order = get_object_or_404(models.Order,id = order_id, user = request.user)
     order.status = 'cancelled'
     order.save()
     return redirect('checkout')
 
+@login_required
 def payment_cancelled(request, order_id):
     order = get_object_or_404(models.Order,id = order_id, user = request.user)
     order.status = 'cancelled'
