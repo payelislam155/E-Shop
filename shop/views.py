@@ -104,7 +104,7 @@ def product_detail(request,slug):
 
 @login_required
 def rate_product(request,product_id):
-    product = get_object_or_404(models.Product,id=product.id)
+    product = get_object_or_404(models.Product,id=product_id)
 
     ordered_items = models.OrderItem.objects.filter(
         order__user = request.user,
