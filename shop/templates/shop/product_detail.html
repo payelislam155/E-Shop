@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} | E-Shop{% endblock %}
+{% block extra_css %}
+<style>
+    .product-container {
+        padding-bottom: 3rem;
+    }
+    
+    .product-header {
+        margin-bottom: 2rem;
+    }
+
+    .product-title {
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .product-subtitle {
+        color: var(--text-light);
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+
+    .breadcrumb-item.active {
+        color: var(--text-color);
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+
+    .product-image-container {
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+
+    .product-image {
+        width: 100%;
+        height: auto;
+        border-radius: var(--border-radius);
+    }
+
+    .product-details {
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        background: #fff;
+    }
+
+    .product-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .product-description {
+        color: var(--text-light);
+        margin-bottom: 2rem;
+    }
+
+    .in-stock-badge, .out-of-stock-badge {
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        text-transform: uppercase;
+    }
+
+    .in-stock-badge {
+        background-color: var(--success-color);
+        color: white;
+    }
+
+    .out-of-stock-badge {
+        background-color: var(--danger-color);
+        color: white;
+    }
+
+    .product-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .rating {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .rating i {
+        color: var(--primary-color);
+    }
+
+    .review-card {
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+    }
+
+    .review-card-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .review-card-body {
+        padding: 1.5rem;
+        background-color: #f9f9f9;
+    }
+
+    .related-products .product-card {
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .related-products .product-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .related-products .product-card-body {
+        padding: 1.25rem;
+    }
+
+    .related-products .product-card-footer {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .related-products .product-card-footer .btn-outline-primary {
+        width: 100%;
+    }
+
+    /* Hover Effects */
+    .related-products .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .related-products .product-card-footer a {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Products</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'product_list_by_category' product.category.slug %}">{{ product.category.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-5 mb-4">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        {% else %}
+        <div class="bg-light text-center p-5 rounded">
+            <i class="fas fa-image fa-5x text-muted"></i>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-7">
+        <h1 class="mb-3">{{ product.name }}</h1>
+        
+        <div class="d-flex align-items-center mb-3">
+            <div class="rating me-2">
+                {% for i in "12345" %}
+                {% if forloop.counter <= product.average_rating %}
+                <i class="fas fa-star"></i>
+                {% else %}
+                <i class="far fa-star"></i>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <span class="text-muted">{{ product.ratings.count }} review{{ product.ratings.count|pluralize }}</span>
+        </div>
+        
+        <h2 class="h3 text-primary mb-4">৳{{ product.price }}</h2>
+        
+        <p class="mb-4">{{ product.description }}</p>
+        
+        <div class="mb-4">
+            <span class="badge bg-{% if product.stock > 0 %}success{% else %}danger{% endif %}">
+                {% if product.stock > 0 %}In Stock ({{ product.stock }} available){% else %}Out of Stock{% endif %}
+            </span>
+            <span class="badge bg-secondary">{{ product.category.name }}</span>
+        </div>
+        
+        {% if product.stock > 0 %}
+        <form action="{% url 'cart_add' product.id %}" method="post" class="mb-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <ul class="nav nav-tabs" id="productTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" 
+                        type="button" role="tab" aria-controls="reviews" aria-selected="true">
+                    Reviews ({{ product.ratings.count }})
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content p-4 border border-top-0 rounded-bottom" id="productTabsContent">
+            <div class="tab-pane fade show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                {% if product.ratings.count > 0 %}
+                <div class="mb-4">
+                    <h4>Customer Reviews</h4>
+                    {% for rating in product.ratings.all %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">{{ rating.user.username }}</h5>
+                                <div class="rating">
+                                    {% for i in "12345" %}
+                                    {% if forloop.counter <= rating.rating %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-2">{{ rating.created|date:"F d, Y" }}</p>
+                            <p class="mb-0">{{ rating.comment }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>No reviews yet. Be the first to review this product!</p>
+                {% endif %}
+                
+                {% if user.is_authenticated %}
+                    {% if user_rating %}
+                    <h4>Your Review</h4>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="rating">
+                                    {% for i in "12345" %}
+                                    {% if forloop.counter <= user_rating.rating %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <a href="{% url 'rate_product' product.id %}" class="btn btn-sm btn-outline-primary">
+                                    Edit Review
+                                </a>
+                            </div>
+                            <p class="mb-0">{{ user_rating.comment }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>Write a Review</h4>
+                            <p>Have you purchased this product? Share your thoughts with other customers!</p>
+                            <a href="{% url 'rate_product' product.id %}" class="btn btn-primary">Write a Review</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                <div class="alert alert-info">
+                    Please <a href="{% url 'login' %}?next={{ request.path }}">log in</a> to write a review.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if related_products %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="mb-4">Related Products</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for product in related_products %}
+            <div class="col">
+                <div class="card h-100 product-card">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% else %}
+                    <div class="bg-light text-center p-5">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 mb-0">৳{{ product.price }}</span>
+                            <div class="rating">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= product.average_rating %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'product_detail' product.slug %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            <form action="{% url 'cart_add' product.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary w-100">Add to Cart</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

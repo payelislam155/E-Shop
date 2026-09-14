@@ -6,7 +6,6 @@ from . import models
 from . import forms
 from django.db.models import Q,Max,Min,Avg
 from . import sslcommerz
-# Create your views here.
 
 # Manual User Authentication
 def login_view(request):
@@ -19,10 +18,10 @@ def login_view(request):
        if user is not None:
            login(request, user)
            messages.success(request,'Login Successful!')
-           redirect
+           redirect('home')
        else:
            messages.error(request, "invalid username or password")
-    return render(request, '')
+    return render(request, 'shop/login.html')
 
 def register_view(request):
     if request.method == 'POST':
@@ -31,20 +30,20 @@ def register_view(request):
            user = form.save()
            login(request, user)
            messages.success(request,'Registration Successful!')
-           return redirect('')
+           return redirect('home')
     else:
         form = RegistrationForm()
-    return render(request,'',{'form':form})
+    return render(request,'shop/register.html',{'form':form})
 
 def logout_view(request):
     logout(request)
-    return render('')
+    return render('home')
 
 # homepage
 def home(request):
-    featured_products = models.Product.objects.filter(available=True).order_by('-created_at')[:8] # descending order
+    featured_products = models.Product.objects.filter(available=True).order_by('-created')[:8] # descending order
     categories = models.Category.objects.all()
-    return render(request,'',{'featured_product':featured_products,'categories':categories})
+    return render(request,'shop/home.html',{'featured_product':featured_products,'categories':categories})
 
 def product_list(request,category_slug = None):
     category = None
@@ -55,8 +54,8 @@ def product_list(request,category_slug = None):
         category = get_object_or_404(models.Category,category_slug)
         products = products.filter(category = category)
 
-    min_price = products.aaggregate(Min('price'))['price_min']
-    max_price = products.aaggregate(Max('price'))['price_max']
+    min_price = products.aggregate(Min('price'))['price__min']
+    max_price = products.aggregate(Max('price'))['price__max']
 
     if request.GET.get('min_price'):
         products = products.filter(price__gte=request.GET.get('min_price'))
@@ -74,7 +73,7 @@ def product_list(request,category_slug = None):
             Q(description__icontains = query) |
             Q(category_name__icontains = query)
         )
-    return render(request,'',{
+    return render(request,'shop/product_list.html',{
         'category':category,
         'categories':categories,
         'products':products,
@@ -95,7 +94,7 @@ def product_detail(request,slug):
         except models.Rating.DoesNotExist:
               pass
     rating_form = RatingForm(instance=user_rating)
-    return render(request,'',{
+    return render(request,'shop/product_detail.html',{
         'product':product,
         'related_products':related_products,
         'user_rating':user_rating,
@@ -113,7 +112,7 @@ def rate_product(request,product_id):
 
     if not ordered_items.exists():
         messages.warning(request, 'You can only rate products you have purchased')
-        return redirect('')
+        return redirect('product_detail',slug=product.slug)
     try:
         rating = models.Rating.objects.get(product=product,user = request.user)
     except models.Rating.DoesNotExist:
@@ -125,13 +124,21 @@ def rate_product(request,product_id):
            rating.product = product
            rating.user = request.user
            rating.save()
-           return redirect('')
+           return redirect('product_detail', slug=product.slug)
     else:
         form = RatingForm(instance=rating)
-    return render(request,'',{
+    return render(request,'shop/rate_product.html',{
         'form':form,
         'product':product
     })
+
+# cart related views
+def cart_detail(request):
+    try:
+        cart = models.Cart.objects.get(user = request.user)
+    except models.Cart.DoesNotExist:
+        cart = models.Cart.objects.create(user = request.user)
+    return render(request,'shop/cart.html',{'cart':cart})
 
 def cart_add(request,product_id):
     product = get_object_or_404(models.Product,id=product_id)
@@ -149,7 +156,7 @@ def cart_add(request,product_id):
         models.CartItem.objects.create(cart=cart,product=product,quantity = 1)
 
     messages.success(request,f"{product.name} has been added to your cart!")
-    return redirect(request,'')
+    return redirect(request,'product_detail',slug=product.slug)
 
 def cart_update(request,product_id):
     cart = get_object_or_404(models.Cart,user = request.user)
@@ -165,7 +172,7 @@ def cart_update(request,product_id):
         cart_item.quantity = quantity
         cart_item.save()
         messages.success(request,f'Cart updated successfully!!')
-    return redirect('')
+    return redirect('cart_detail')
 
 def cart_remove(request,product_id):
     cart = get_object_or_404(models.Cart,user = request.user)
@@ -174,14 +181,7 @@ def cart_remove(request,product_id):
 
     cart_item.delete()
     messages.success(request,f'{product.name} has been deleted from your cart')
-    return redirect('')
-
-def cart_detail(request):
-    try:
-        cart = models.Cart.objects.get(user = request.user)
-    except models.Cart.DoesNotExist:
-        cart = models.Cart.objects.create(user = request.user)
-    return render(request,'',{'cart':cart})
+    return redirect('cart_detail')
 
 # Product->Cart Item -> Order Item
 def checkout(request):
@@ -192,7 +192,7 @@ def checkout(request):
             return redirect('')
     except models.Cart.DoesNotExist:
             messages.warning(request,'your cart is empty')
-            return redirect('')
+            return redirect('cart_detail')
     if request.method == 'POST':
         form = forms.CheckoutForm(request.POST)
         if form.is_valid():
@@ -209,27 +209,27 @@ def checkout(request):
                )
            cart.items.all().delete()
            request.session['order_id'] = order.id
-           return redirect('')
+           return redirect('payment_process')
     else:
         form = forms.CheckoutForm()
-    return render(request,'',{
+    return render(request,'shop/checkout.html',{
         'cart':cart,
         'form':form
     })
 
-#payment related
-
+# payment related views
 def payment_process(request):
     order_id = request.session.get('order_id')
     if not order_id:
-        return redirect('')
+        return redirect('home')
     order = get_object_or_404(models.Order, id = order_id)
     payment_data = sslcommerz.generate_sslcommerz_payment(request, order)
 
     if payment_data == 'SUCCESS':
-        return redirect('')
+        return redirect(payment_data['GatewayPageURL'])
     else:
         messages.error(request,'Payment Gatway Error')
+        return redirect('checkout')
 
 def payment_success(request,order_id):
     order = get_object_or_404(models.Order,id = order_id,user = request.user)
@@ -247,16 +247,16 @@ def payment_success(request,order_id):
         product.save()
 
     messages.success(request,'payment successful!')
-    return render(request,'',{'order':order})
+    return render(request,'shop/payment_success.html',{'order':order})
 
 def payment_fail(request, order_id):
     order = get_object_or_404(models.Order,id = order_id, user = request.user)
     order.status = 'cancelled'
     order.save()
-    return redirect('')
+    return redirect('checkout')
 
 def payment_cancelled(request, order_id):
     order = get_object_or_404(models.Order,id = order_id, user = request.user)
     order.status = 'cancelled'
     order.save()
-    return redirect('')
+    return redirect('checkout')

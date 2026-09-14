@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+{% block title %}Login | E-Shop{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0">Log In</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username or Email</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p>Or sign in with:</p>
+                    <a href="{% provider_login_url 'google' next=request.GET.next %}" class="btn btn-outline-danger">
+                        <i class="fab fa-google me-2"></i> Google
+                    </a>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="mb-0">Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

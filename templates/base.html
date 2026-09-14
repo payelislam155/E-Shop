@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-Commerce Store{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    {% load static %}
+    {% block extra_css %}{% endblock %}
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --primary-dark: #5a0cb8;
+            --primary-light: #7c4ddb;
+            --secondary-color: #2575fc;
+            --text-color: #333333;
+            --text-light: #6c757d;
+            --bg-light: #f8f9fa;
+            --border-radius: 10px;
+            --box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        main {
+            flex: 1;
+        }
+        
+        /* Navbar styling */
+        .navbar {
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+        
+        .nav-item.active .nav-link {
+            color: var(--primary-color);
+        }
+        
+        .navbar .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .navbar .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Search box styling */
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            border-radius: 50px;
+            padding-left: 1rem;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(106, 17, 203, 0.15);
+            border-color: var(--primary-light);
+        }
+        
+        .search-btn {
+            border-radius: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.375rem 1rem;
+            border: none;
+        }
+        
+        .search-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* Cart button styling */
+        .cart-btn {
+            position: relative;
+            padding: 0.5rem 1rem;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        
+        .cart-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(25%, -25%);
+            background-color: var(--primary-color);
+        }
+        
+        /* Product card styling */
+        .product-card {
+            border: none;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* Rating stars */
+        .rating {
+            color: #ffc107;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        /* Footer styling */
+        footer {
+            background-color: var(--bg-light);
+            padding: 3rem 0 1.5rem;
+            margin-top: 5rem;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+        }
+        
+        footer h5 {
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            color: var(--primary-color);
+        }
+        
+        footer p {
+            color: var(--text-light);
+        }
+        
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: #e9ecef;
+            color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        /* Alert messages */
+        .alert {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'home' %}">E-Shop</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        </li>
+                        <li class="nav-item {% if '/products/' in request.path %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'product_list' %}">Products</a>
+                        </li>
+                    </ul>
+                    
+                    <form class="d-flex search-box me-3" action="{% url 'product_list' %}" method="get">
+                        <input class="form-control search-input me-2" type="search" name="search" placeholder="Search products..." aria-label="Search">
+                        <button class="btn search-btn" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    
+                    <ul class="navbar-nav">
+                        <li class="nav-item me-2">
+                            <a class="nav-link cart-btn" href="{% url 'cart_detail' %}">
+                                <i class="fas fa-shopping-cart"></i> Cart
+                                {% if cart_items_count %}
+                                    <span class="badge rounded-pill cart-badge">{{ cart_items_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                        <i class="fas fa-user me-2"></i> My Profile
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                    </a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-outline-primary ms-2 px-3" href="{% url 'login' %}">
+                                    <i class="fas fa-sign-in-alt me-1"></i> Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-primary ms-2 px-3 text-white" href="{% url 'register' %}">
+                                    <i class="fas fa-user-plus me-1"></i> Register
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="container my-4">
+        {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif message.tags == 'info' %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% elif message.tags == 'error' %}
+                            <i class="fas fa-times-circle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>About Us</h5>
+                    <p>We provide high-quality products at affordable prices. Our mission is to make online shopping easy, secure, and enjoyable.</p>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>Contact</h5>
+                    <p>
+                        <i class="fas fa-envelope me-2 text-primary"></i> contact@eshop.com<br>
+                        <i class="fas fa-phone me-2 text-primary"></i> +880 1234-567890<br>
+                        <i class="fas fa-map-marker-alt me-2 text-primary"></i> 123 E-Commerce St, Digital City
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Stay Connected</h5>
+                    <div class="social-icons mb-3">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <p>Subscribe to our newsletter for updates on new arrivals and special offers.</p>
+                </div>
+            </div>
+            <hr>
+            <div class="row mt-3">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <p class="mb-0">&copy; {% now "Y" %} E-Shop. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <a href="#" class="text-decoration-none me-3 text-muted">Privacy Policy</a>
+                        <a href="#" class="text-decoration-none me-3 text-muted">Terms of Service</a>
+                        <a href="#" class="text-decoration-none text-muted">FAQ</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
