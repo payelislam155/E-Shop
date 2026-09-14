@@ -7,6 +7,7 @@ from . import forms
 from django.db.models import Q,Max,Min,Avg
 from . import sslcommerz
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 # Manual User Authentication
 def login_view(request):
@@ -239,35 +240,37 @@ def payment_process(request):
         messages.error(request,'Payment Gatway Error')
         return redirect('checkout')
 
-@login_required
-def payment_success(request,order_id):
-    order = get_object_or_404(models.Order,id = order_id,user = request.user)
+@csrf_exempt
+def payment_success(request, order_id):
+    order = get_object_or_404(models.Order, id=order_id)
     order.paid = True
     order.status = 'processing'
     order.transaction_id = order.id
     order.save()
+
     order_items = order.order_items.all()
     for item in order_items:
         product = item.product
-        product.stock -= item. quantity
+        product.stock -= item.quantity
 
-        if product.stock < 0 :
+        if product.stock < 0:
             product.stock = 0
         product.save()
 
-    messages.success(request,'payment successful!')
-    return render(request,'shop/payment_success.html',{'order':order})
+    sslcommerz.send_order_confirmation_email(order)
+    messages.success(request, 'payment successful!')
+    return render(request, 'shop/payment_success.html', {'order': order})
 
-@login_required
+@csrf_exempt
 def payment_fail(request, order_id):
-    order = get_object_or_404(models.Order,id = order_id, user = request.user)
+    order = get_object_or_404(models.Order,id = order_id)
     order.status = 'cancelled'
     order.save()
     return redirect('checkout')
 
-@login_required
+@csrf_exempt
 def payment_cancelled(request, order_id):
-    order = get_object_or_404(models.Order,id = order_id, user = request.user)
+    order = get_object_or_404(models.Order,id = order_id)
     order.status = 'cancelled'
     order.save()
     return redirect('checkout')

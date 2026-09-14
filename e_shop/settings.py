@@ -127,14 +127,17 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+# Email Configuration
 MAILERS = {
     'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-        'HOST': 'smtp.gmail.com',
-        'PORT': 587,
-        'USER': 'sayem565554@gmail.com',
-        'PASSWORD': 'uivizhptsrtoobxn',
-        'USE_TLS': True,
+        'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+        'OPTIONS': {
+            'host': 'smtp.gmail.com',
+            'port': 587,
+            'username': 'sayem565554@gmail.com',
+            'password': 'uivizhptsrtoobxn',
+            'use_tls': True,
+        },
     },
 }
 
