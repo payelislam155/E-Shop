@@ -272,7 +272,7 @@ def payment_success(request, order_id):
             product.stock = 0
         product.save()
 
-    sslcommerz.send_order_confirmation_email(order)
+    #sslcommerz.send_order_confirmation_email(order)
     messages.success(request, 'payment successful!')
     return render(request, 'shop/payment_success.html', {'order': order})
 
