@@ -31,7 +31,7 @@ urlpatterns = [
     path('payment/cancel/<int:order_id>/', views.payment_cancelled, name = 'payment_cancelled'),
 
     # profile related
-
+    path('profile/', views.profile, name = 'profile'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL,document_root = settings.MEDIA_ROOT)

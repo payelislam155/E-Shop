@@ -78,18 +78,18 @@
         <div class="logo">E-Shop</div>
         <p>Thank you for your order!</p>
     </div>
-    
+
     <div class="order-info">
         <h2>Order Confirmation</h2>
         <p>Hi {{ order.first_name }},</p>
         <p>Your order has been confirmed and is now being processed. Here's a summary of your order:</p>
-        
+
         <p><strong>Order #:</strong> {{ order.id }}</p>
-        <p><strong>Order Date:</strong> {{ order.created_at|date:"F d, Y H:i" }}</p>
+        <p><strong>Order Date:</strong> {{ order.created|date:"F d, Y H:i" }}</p>
         <p><strong>Payment Status:</strong> Paid</p>
         <p><strong>Transaction ID:</strong> {{ order.transaction_id }}</p>
     </div>
-    
+
     <h3>Order Details</h3>
     <table class="order-items">
         <thead>
@@ -111,11 +111,11 @@
             {% endfor %}
         </tbody>
     </table>
-    
+
     <div class="order-total">
         <p>Total: ৳{{ order.get_total_cost }}</p>
     </div>
-    
+
     <div class="shipping-info">
         <h3>Shipping Information</h3>
         <p>
@@ -124,11 +124,11 @@
             {{ order.city }}, {{ order.postal_code }}
         </p>
     </div>
-    
+
     <p>We'll notify you when your order has been shipped. If you have any questions, please contact our customer service.</p>
-    
+
     <p>Thank you for shopping with us!</p>
-    
+
     <div class="footer">
         <p>© 2025 E-Shop. All rights reserved.</p>
         <p>This email was sent to {{ order.email }}</p>

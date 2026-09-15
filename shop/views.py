@@ -145,39 +145,51 @@ def cart_detail(request):
     return render(request,'shop/cart.html',{'cart':cart})
 
 @login_required
-def cart_add(request,product_id):
-    product = get_object_or_404(models.Product,id=product_id)
+def cart_add(request, product_id):
+    product = get_object_or_404(models.Product, id=product_id)
 
     try:
         cart = models.Cart.objects.get(user=request.user)
-    except:
-        cart = models.Cart.objects.create(user = request.user)
+    except models.Cart.DoesNotExist:
+        cart = models.Cart.objects.create(user=request.user)
 
     try:
-        cart_item = models.CartItem.objects.get(cart=cart,product=product)
-        cart_item.quantity += 1
-        cart_item.save()
+        cart_item = models.CartItem.objects.get(cart=cart, product=product)
+        if cart_item.quantity < product.stock:
+            cart_item.quantity += 1
+            cart_item.save()
+            messages.success(request, f"{product.name} has been added to your cart!")
+        else:
+            messages.warning(request, f"Sorry, only {product.stock} items are available in stock.")
     except models.CartItem.DoesNotExist:
-        models.CartItem.objects.create(cart=cart,product=product,quantity = 1)
+        if product.stock > 0:
+            models.CartItem.objects.create(cart=cart, product=product, quantity=1)
+            messages.success(request, f"{product.name} has been added to your cart!")
+        else:
+            messages.warning(request, f"Sorry, this product is out of stock.")
 
-    messages.success(request,f"{product.name} has been added to your cart!")
-    return redirect('product_detail',slug=product.slug)
+    return redirect('product_detail', slug=product.slug)
 
 @login_required
-def cart_update(request,product_id):
-    cart = get_object_or_404(models.Cart,user = request.user)
-    product = get_object_or_404(models.Product,id=product_id)
-    cart_item = get_object_or_404(models.CartItem,cart=cart,product=product)
+def cart_update(request, product_id):
+    cart = get_object_or_404(models.Cart, user=request.user)
+    product = get_object_or_404(models.Product, id=product_id)
+    cart_item = get_object_or_404(models.CartItem, cart=cart, product=product)
 
-    quantity = int(request.POST.get('quantity',1))
+    quantity = int(request.POST.get('quantity', 1))
 
     if quantity <= 0:
-       cart_item.delete()
-       messages.success(request,f'{product.name} has been delete from your cart')
+        cart_item.delete()
+        messages.success(request, f'{product.name} has been deleted from your cart')
+    elif quantity > product.stock:
+        cart_item.quantity = product.stock
+        cart_item.save()
+        messages.warning(request, f"Sorry, we only have {product.stock} items in stock. Cart updated to maximum available.")
     else:
         cart_item.quantity = quantity
         cart_item.save()
-        messages.success(request,f'Cart updated successfully!!')
+        messages.success(request, 'Cart updated successfully!!')
+
     return redirect('cart_detail')
 
 @login_required
@@ -274,3 +286,20 @@ def payment_cancelled(request, order_id):
     order.status = 'cancelled'
     order.save()
     return redirect('checkout')
+
+# profile page
+@login_required
+def profile(request):
+    tab = request.GET.get('tab')
+    orders = models.Order.objects.filter(user=request.user)
+    completed_orders = orders.filter(status='delivered')
+    total_spent = sum(order.get_total_cost() for order in orders)
+    order_history_active = (tab == 'orders')
+
+    return render(request,'shop/profile.html',{
+        'user': request.user,
+        'orders':orders,
+        'completed_orders':completed_orders,
+        'total_spent':total_spent,
+        'order_history_active':order_history_active
+    })

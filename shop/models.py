@@ -91,6 +91,7 @@ class Order(models.Model):
      note = models.TextField()
      paid = models.BooleanField(default=False)
      transaction_id = models.CharField(max_length=100)
+     created = models.DateTimeField(auto_now_add=True)
      updated = models.DateTimeField(auto_now=True)
      status = models.CharField(max_length=10,choices=STATUS)
 
