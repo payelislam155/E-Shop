@@ -1,6 +1,13 @@
+import environ
 from pathlib import Path
+import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env()
+
+environ.Env.read_env(os.path.join(BASE_DIR, 'e_shop', '.env'))
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -8,10 +15,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s8nw=zwsr+vvfqzvmvlyc!=#u74$6sy&&fuw98i%a9v)4c2k1@'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = []
 
@@ -139,16 +146,16 @@ MAILERS = {
         'OPTIONS': {
             'host': 'smtp.gmail.com',
             'port': 587,
-            'username': 'sayem565554@gmail.com',
-            'password': 'uivizhptsrtoobxn',
+            'username': env('EMAIL_HOST_USER'),
+            'password': env('EMAIL_HOST_PASSWORD'),
             'use_tls': True,
         },
     },
 }
 
 # SSL Commerz setup
-SSLCOMMERZ_STORE_ID = 'eagle6aa64fbadba04'
-SSLCOMMERZ_STORE_PASSWORD = 'eagle6aa64fbadba04@ssl'
+SSLCOMMERZ_STORE_ID = env('SSL_STORE_ID')
+SSLCOMMERZ_STORE_PASSWORD = env('SSL_STORE_PASSWORD')
 SSLCOMMERZ_PAYMENT_URL = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php'
 SSLCOMMERZ_VALIDATION_URL = 'https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php'
 

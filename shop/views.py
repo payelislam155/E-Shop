@@ -39,13 +39,16 @@ def register_view(request):
 
 def logout_view(request):
     logout(request)
-    return render('home')
+    return redirect('home')
 
 # homepage
 def home(request):
-    featured_products = models.Product.objects.filter(available=True).order_by('-created')[:8] # descending order
+    featured_products = models.Product.objects.filter(available=True)[:4]
     categories = models.Category.objects.all()
-    return render(request,'shop/home.html',{'featured_product':featured_products,'categories':categories})
+    return render(request, 'shop/home.html',{
+        'featured_products': featured_products,
+        'categories': categories
+    })
 
 def product_list(request,category_slug = None):
     category = None
